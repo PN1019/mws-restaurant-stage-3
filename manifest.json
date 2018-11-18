@@ -1,0 +1,41 @@
+{
+  "name": "Restaurant Reviews ",
+  "short_name": "RReviews",
+  "lang": "en-US",
+  "start_url": "/",
+  "background_color": "#fdfdfd",
+  "display": "standalone",
+  "theme_color": "#3700B3",
+  "icons": [
+    {
+      "src": "img/icons/iconman.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icons/iconman-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icons/iconman-64x64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icons/iconman-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icons/iconman-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icons/iconman-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
