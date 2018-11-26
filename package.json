@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/udacity/mws-restaurant-stage-1.git"
+    "url": "git+https://github.com/udacity/mws-restaurant-stage-3.git"
   },
   "author": "PN10",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/udacity/mws-restaurant-stage-1/issues"
+    "url": "https://github.com/udacity/mws-restaurant-stage-3/issues"
   },
-  "homepage": "https://github.com/udacity/mws-restaurant-stage-1#readme",
+  "homepage": "https://github.com/udacity/mws-restaurant-stage-3#readme",
   "devDependencies": {
     "browser-sync": "^2.26.3",
     "del": "^3.0.0",
