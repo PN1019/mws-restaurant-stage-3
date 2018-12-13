@@ -1,3 +1,14 @@
+/* import ('./js/idb'); */
+ if (typeof idb === "undefined") {
+        self.importScripts('js/idb.js');
+    }
+/* if (typeof idb=== "undefined"){
+    console.log('failed to import idb');
+}else{
+    console.log('imported idb');
+} */
+
+ 
 const staticCacheName = 'restaurant-reviews-v4';
 var imgCache = 'restaurant-img';
 
@@ -115,6 +126,50 @@ function cacheImages(request) {
 	        // Build the return URL
 	    	var returnUrl = req.url.substr(0, req.url.lastIndexOf(".")) + ".webp";
 	//console.log("Service Worker starting fetch"); */
-  
+  self.addEventListener('sync', function(event) {
+  if (event.tag == 'restaurantReviewsOffline') {
+    event.waitUntil(syncReviews());
+  }
+});
+ function syncReviews(){
+   return idb.open('restaurant-reviews', 1).then(db => {
+     const tx = db.transaction('restaurantReviewsOffline', 'readwrite');
+    const store = tx.objectStore('restaurantReviewsOffline');
+    //Get all reviews saved in restaurantReviewsOffline
+    store.getAll().then(reviews => {
+      //Submit offline reviews to server
+      reviews.forEach(review => {
+        fetch('http://localhost:1337/reviews/', {
+          body: JSON.stringify(review),
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          method: "POST"
+         }).then(response => {
+          //Save submitted review to IDB and delete the review from restaurantReviewsOffline.
+          return response.json().then(data => {
+            let tx = db.transaction('restaurantReviews', 'readwrite');
+            let store = tx.objectStore('restaurantReviews');
+            store.put(data).then(function(id){
+              let tx = db.transaction('restaurantReviewsOffline', 'readwrite');
+              let store = tx.objectStore('restaurantReviewsOffline');
+              store.delete(data.updatedAt);
+              return tx.complete;
+            }).catch(function(error){
+              console.log('Unable to save data to IDB', error);
+            });
+            return tx.complete;
+          }).catch(error => {
+            console.log('Couldn\'t connect to network' , error);
+          })
+        })
+      });
+    }).catch(function (error) {
+      console.log(error);
+    });
+   }).catch(function (error) {
+    console.log(error);
+  });
+} 
 
  

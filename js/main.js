@@ -5,14 +5,14 @@ var newMap
 var markers = []
 
 /**
- * Fetch neighborhoods and cuisines as soon as the page is loaded.
+ * Initialize Map, fetch neighborhoods, cuisines,fetch images upon scrolling as soon as the page is loaded and initialize IndexDb .
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   DBHelper.initIDB(); //Initialize indexed db
   initMap(); // added 
   fetchNeighborhoods();
   fetchCuisines();
-  
+  lazyLoadImages(); //Fetch image upon scrolling.
   
 });
 
@@ -75,9 +75,13 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
 /**
  * Initialize leaflet map, called from HTML.
  */
+ const loc = {
+  lat: 40.722216,
+  lng: -73.987501
+};
 const initMap = () => {
   self.newMap = L.map('map', {
-        center: [40.722216, -73.987501],
+        center:loc,
         zoom: 12,
         scrollWheelZoom: false
       });

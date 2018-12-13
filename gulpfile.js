@@ -1,9 +1,10 @@
 var autoprefixer = require('gulp-autoprefixer');
+var babel = require('gulp-babel');
 var browserSync = require('browser-sync').create();
 var connect = require('gulp-connect');
 
 var del = require('del');
-var gulp = require("gulp");
+var gulp = require('gulp');
 var gzip = require('gulp-gzip');
 var gzipStatic = require('connect-gzip-static');
 var gulpSequence = require('gulp-sequence');
@@ -20,7 +21,7 @@ var webp = require('gulp-webp');
 
   //============= code for your default task goes here ===========
 
-gulp.task('default', ['clean', 'copy-html', 'copy-icons','minify-images','minify-styles', 'scripts', 'service-worker', 'copy-manifest'
+gulp.task('default', ['clean:dist', 'copy-html','minify-images','minify-styles', 'scripts', 'service-worker', 'copy-manifest'
     ],
     function () {
         gulp.watch('css/**/*.css', ['minify-styles']);
@@ -84,20 +85,33 @@ gulp.task('copy-html', function () {
  gulp.task('scripts', function () {
     gulp.src('js/**/*.js')
         .pipe(sourcemaps.init())
+		.pipe(babel({
+            presets: ['es2015']
+			}))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/js'));
 });
 
 gulp.task('scripts-dist', function () {
     gulp.src('js/**/*.js')
-        .pipe(uglifyjs())
+        .pipe(uglifyjs().on('error', function(e){
+            console.log(e);
+         }))
+		.pipe(babel({
+            presets: ['es2015']
+			}))
         .pipe(gulp.dest('dist/js'))
         .pipe(connect.reload());
 }); 
 
 gulp.task('service-worker', function () {
     return gulp.src('./serviceworker.js')
-        .pipe(uglifyjs())
+        .pipe(uglifyjs().on('error', function(e){
+            console.log(e);
+         }))
+		.pipe(babel({
+            presets: ['es2015']
+			}))
         .pipe(gulp.dest('dist'))
         .pipe(connect.reload());
 });

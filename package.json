@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/udacity/mws-restaurant-stage-3#readme",
   "devDependencies": {
+    "@babel/core": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
     "browser-sync": "^2.26.3",
     "del": "^3.0.0",
     "grunt": "^1.0.3",
@@ -27,6 +29,7 @@
     "grunt-responsive-images": "^1.10.1",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^6.0.0",
+    "gulp-babel": "^8.0.0",
     "gulp-connect": "^5.6.1",
     "gulp-gzip": "^1.4.2",
     "gulp-imagemin": "^4.1.0",
@@ -41,6 +44,7 @@
     "connect-gzip-static": "^2.1.1",
     "cors": "^2.8.4",
     "gulp-sass": "^4.0.2",
-    "npm": "^6.4.1"
+    "npm": "^6.4.1",
+    "promise": "^8.0.2"
   }
 }

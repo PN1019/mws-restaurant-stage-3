@@ -7,6 +7,7 @@ var newMap;
 document.addEventListener('DOMContentLoaded', (event) => {  
 DBHelper.initIDB(); //Initialize indexed db
   initMap();
+  window.addEventListener('online',  syncReviews);
 });
 
 /**
@@ -35,22 +36,6 @@ initMap = () => {
     }
   });
 }  
- 
-/* window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-} */
 
 /**
  * Get current restaurant from page URL.
@@ -125,7 +110,13 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 	time.tabIndex=0;
     row.appendChild(time);
 
-    hours.appendChild(row);
+  
+	const opHours = document.createElement('span');
+    opHours.innerHTML = operatingHours[key];
+    time.append(opHours);
+	  
+	  hours.appendChild(row);
+	  row.appendChild(time);
   }
 }
 
@@ -187,6 +178,13 @@ createReviewHTML = (review) => {
   date.tabIndex=0;
   li.appendChild(date);
 
+
+  const createdAt = document.createElement('span');
+  createdAt.innerHTML = new Date(review.createdAt).toDateString();
+  date.append(createdAt);
+  header.appendChild(date);
+  li.appendChild(header);
+
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
   rating.tabIndex=0;
@@ -235,14 +233,92 @@ reviewForm.addEventListener('submit', event => {
   const reviewObject = {
     restaurant_id: self.restaurant.id,
     name: reviewForm.querySelector('#name').value,
-    rating: reviewForm.querySelector('#rating').value,
+    rating: self.restaurant.rating == undefined ? 1 : self.restaurant.rating,
     comments: reviewForm.querySelector('#comment').value,
   }
+  const reviewList = document.querySelector('#reviews-list');
+  if(navigator.onLine){
   DBHelper.submitReview(reviewObject).then(data => {
-	   const reviewList = document.querySelector('#reviews-list');
 	   reviewList.appendChild(createReviewHTML(reviewObject));
     reviewForm.reset();
+	setRating(1);
+});
+const ratingStarArray = document.querySelectorAll('.rating-star');
+const CLASS_STAR_EMPTY = 'star-empty';
+const CLASS_STAR_FILLED = 'star-filled';
+const CLASS_SELECTED = 'selected';
+ ratingStarArray.forEach(ratingStar => {
+   ratingStar.addEventListener('mouseover', event => {
+    var rating = parseInt(event.target.dataset.rating);
+    // fill all the stars
+    addAndRemoveClass(ratingStarArray, CLASS_STAR_FILLED, CLASS_STAR_EMPTY);
+    // de-select all the stars to the right of the mouse
+    deSelectStarsToRight(rating, CLASS_STAR_EMPTY, CLASS_STAR_FILLED);
+  });
+   ratingStar.addEventListener('mouseleave', event => {
+    addAndRemoveClass(ratingStarArray, CLASS_STAR_EMPTY, CLASS_STAR_FILLED);
+  });
+   ratingStar.addEventListener('click', event => {
+    setRating(parseInt(event.target.dataset.rating));
+  });
+   ratingStar.addEventListener('keydown', event => {
+    // if Spacebar or Enter button is pressed while selecting a star
+    if (event.code === "Space" || event.code === "Enter") {
+      setRating(parseInt(event.target.dataset.rating));
+    }
+  });
+ });
+ /**
+ * @description
+ * This function will fill all the stars.
+ * @param {Array} elemArray
+ * @param {string} addClass
+ * @param {string} removeClass
+ */
+function addAndRemoveClass(elemArray, addClass, removeClass) {
+  elemArray.forEach(element => {
+    element.classList.add(addClass);
+    element.classList.remove(removeClass);
+  });
+}
+ /**
+ * @description
+ * This function will de-select all the stars to the right of the mouse
+ * @param {string} rating
+ * @param {string} addClass
+ * @param {string} removeClass
+ */
+function deSelectStarsToRight(rating, addClass, removeClass){
+  let elemArray = document.querySelectorAll('#rating' + rating + '~.rating-star');
+  addAndRemoveClass(elemArray, addClass, removeClass);
+}
+ /**
+ * @description
+ * Sets the rating
+ * @param {number} rating
+ */
+function setRating(rating) {
+  self.restaurant.rating = rating;
+  // select the stars before the selected star by assigning the '.selected' class.
+  addAndRemoveClass(ratingStarArray, CLASS_SELECTED ,CLASS_STAR_EMPTY);
+  // deselect all the stars to the right of the selected star.
+  deSelectStarsToRight(rating, CLASS_STAR_EMPTY, CLASS_SELECTED);
+}
+  
+/**
+ * @description
+ * Post reviews which are stored in the  restaurantReviewsOffline to the server.
+ */
+function syncReviews() {
+  //Get all reviews saved in restaurantReviewsOffline
+  DBHelper.getOfflineReviewsFromIDBCache().then(reviews => {
+    //Submit offline reviews to server delete the review from restaurantReviewsOffline.
+    reviews.forEach(review => {
+      DBHelper.submitReview(review, true).then(data => {
+        console.log(`Review from ${data.name} posted successfully to the server.`);
+      }).catch(error => {
+        console.log('Couldn\'t connect to network', error);
+      })
+    });
   }).catch(error => console.log(error));
-})
-  
-  
+}

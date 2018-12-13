@@ -35,8 +35,8 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
   color: #FFFFFF;
   font-size: 1rem;
 }
-h1:focus, h2:focus, p:focus,
-td:focus, input:focus, textarea:focus {
+h1:focus, h2:focus, h3:focus, p:focus,
+td:focus, input:focus, textarea:focus,label:focus {
   outline: 1px solid orangered;
 }
 
@@ -316,7 +316,9 @@ nav h1 a {
 }
 .review-form div {
   padding-bottom: 5px;
-  display: flex;
+display: flex;
+}
+.review-form div:nth-child(2n+1) {
   flex-direction: column;
 }
  .review-form input,
@@ -332,10 +334,38 @@ nav h1 a {
   border: none;
   text-transform: uppercase;
 }
- .review-form button:hover {
+ .review-form button:hover,
+.review-form button:focus {
   background-color: #000000;
   outline: 2px solid orangered;
 }
+#stars {
+  margin: 10px 0 -30px;
+}
+ #rating-group{
+  padding-bottom: 35px;
+  line-height: 1;
+  margin-left: 10px;
+}
+ .star-empty:before {
+ /*  content:'\2606';
+  color: transparent; */
+  content: "☆";
+  color: darkgrey;
+}
+ .star-filled:before,
+.selected:before {
+  content:'\2605';
+  color: #8F4100;
+}
+ .rating-star {
+  cursor: pointer;
+  width: 1em;
+	display: inline-block;
+  font-size: 30px;
+  font-style: normal;
+}
+
 
 /* ====================== Media Queries ====================== */
 @media screen and (max-width: 950px) {

@@ -5,6 +5,7 @@ const APP_URL = 'http://localhost:1337';// Change this according to your configu
 const RESTAURANT_LIST_OBJ_STORE = 'restaurantList';
 const RESTAURANT_REVIEWS_OBJ_STORE = 'restaurantReviews';
 const RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE = 'restaurantReviewsOffline';
+
 class DBHelper {
 
   /**
@@ -35,14 +36,16 @@ class DBHelper {
    * 'restaurant-reviews' db and stores promise in a dbPromise variable
    */
   static initIDB() {
-    this.dbPromise = idb.open('restaurant-reviews', 1, function (upgradeDb) {
-      var restaurantListStore = upgradeDb.createObjectStore('RESTAURANT_LIST_OBJ_STORE', {
-        keyPath: 'id'
+    const dbPromise = idb.open('restaurant-reviews', 1, function (upgradeDb) {
+      var restaurantListStore = upgradeDb.createObjectStore(RESTAURANT_LIST_OBJ_STORE, {
+        keyPath: 'id',
+		autoIncrement : true
       });
       restaurantListStore.createIndex('ids', 'id');
      
 	 var reviewsStore = upgradeDb.createObjectStore(RESTAURANT_REVIEWS_OBJ_STORE, {
-        keyPath: 'id' //primary key for stored obj.
+        keyPath: 'restaurant_id' ,//primary key for stored obj.
+		autoIncrement : true
       });
       
       reviewsStore.createIndex('restaurantId', 'restaurant_id');
@@ -50,21 +53,23 @@ class DBHelper {
 	  var offlineStore = upgradeDb.createObjectStore(RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE, {
         keyPath: 'updatedAt' //updatedAt would be the primary key for stored object.
     });
+//	offlineStore.createIndex('updatedAt','createdAt');
 });
+ return dbPromise;
   }
 
   /**
    * @description
    * This function will return all the restaurant data from indexedDB.
    */
-  static getRestaurantsDataFromIDBCache() {
-    return this.dbPromise.then(db => {
+  static getRestaurantsDataFromIDBCache(){
+	 const dbPromise = DBHelper.initIDB();
+    return dbPromise.then((db) => {
+	if (!db) return;	
       var tx = db.transaction(RESTAURANT_LIST_OBJ_STORE);
 	  var restaurantListStore = tx.objectStore(RESTAURANT_LIST_OBJ_STORE);
       return restaurantListStore.getAll();
-//var reviewsStore = tx.objectStore('restaurantReviews');
-  //    return reviewsStore.getAll();
-    })
+    });
   }
   
   /**
@@ -85,7 +90,7 @@ class DBHelper {
 	  //Change from XHR To Fetch API
     fetch(DBHelper.DATABASE_URL)
     .then(response => {
-          //If request is unsuccessfull then throw error.
+          //If request is unsuccessful then throw error.
           if (!response.ok) {
             throw new Error(response.statusText);
           }
@@ -108,12 +113,17 @@ class DBHelper {
 	 *@param{string} storeName- Name of the store to save  object into.
      */
     static saveDataToIDB(data, storeName) {
-		
-		return this.dbPromise.then(db => {
+		 const dbPromise = DBHelper.initIDB();
+		return dbPromise.then(db => {
        if (!db) {
         return;
       }
-       switch (storeName) {
+	  let tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+	  console.log(store);
+      store.put(data);
+      tx.complete;
+     /*   switch (storeName) {
       case RESTAURANT_LIST_OBJ_STORE:
 	  var tx = db.transaction(storeName, "readwrite");
 	  const restaurantListStore = tx.objectStore(storeName);
@@ -135,7 +145,7 @@ class DBHelper {
           const offlineStore = tx.objectStore(storeName);
           offlineStore.put(data);
           return tx.complete;
-      }
+      } */
     });
   }
 
@@ -200,7 +210,7 @@ class DBHelper {
       if (error) {
         callback(error, null);
       } else {
-        let results = restaurants
+        let results = restaurants;
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
@@ -222,9 +232,9 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
         // Remove duplicates from neighborhoods
-        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
+        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
         callback(null, uniqueNeighborhoods);
       }
     });
@@ -240,9 +250,9 @@ class DBHelper {
         callback(error, null);
       } else {
         // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
+        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
         // Remove duplicates from cuisines
-        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
+        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         callback(null, uniqueCuisines);
       }
     });
@@ -259,14 +269,19 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
+	  if (restaurant.photograph) {
     return (`dist/img/${restaurant.photograph}.webp`);
+  }
+  return (`dist/img/undefined.webp`);
   }
 
   /**
    * Map marker for a restaurant.
    */
    static mapMarkerForRestaurant(restaurant, map) {
-	   //Changing map marker color to Red from blue
+	   //Changing map marker color to Red from blue  
+	   // icon color plugin came from this repo https://github.com/pointhi/leaflet-color-markers
+	   
 	   const redIcon = new L.Icon({
       iconUrl: './img/marker-icon-2x-red.png',
       shadowUrl: './img/marker-shadow.png',
@@ -290,8 +305,9 @@ class DBHelper {
    * @description
    * This function will return all the reviews for a particular restaurant from indexedDB.
    */
-  static getReviewsFromIDBCache(restaurantId) {
-    return this.dbPromise.then(db => {
+  static getReviewsFromIDBCache(dbPromise,restaurantId) {
+    return this.dbPromise.then((db) => {
+		if (!db) return;
       var tx = db.transaction(RESTAURANT_REVIEWS_OBJ_STORE);
       var reviewsStore = tx.objectStore(RESTAURANT_REVIEWS_OBJ_STORE);
       return reviewsStore.index('restaurantId').getAll(parseInt(restaurantId));
@@ -307,14 +323,14 @@ class DBHelper {
      * If data is not cached then make a network request.
      */
     fetch(DBHelper.REVIEWS_URL).then(response => {
-      //If request is unsuccessfull then throw error.
+      //If request is unsuccessful then throw error.
       if (!response.ok) {
         throw new Error(response.statusText);
       }
       //convert data in response received from server to json.
       return response.json();
      }).then(reviews => {
-      // DBHelper.saveDataToIDB(reviews,RESTAURANT_REVIEWS_OBJ_STORE);
+      DBHelper.saveDataToIDB(reviews,RESTAURANT_REVIEWS_OBJ_STORE);
       callback(null, reviews);
      }).catch(error => {
       callback(error, null);
@@ -339,7 +355,7 @@ class DBHelper {
      * If data is not cached then make a network request.
      */
     fetch(`${DBHelper.REVIEWS_BY_ID_URL}${restaurantID}`).then(response => {
-      //If request is unsuccessfull then throw error.
+      //If request is unsuccessful then throw error.
       if (!response.ok) {
         throw new Error(response.statusText);
       }
@@ -373,31 +389,73 @@ class DBHelper {
         return tx.complete;
       });
     }); */ 
-	static submitReview(reviewObject) {
+	/**
+   * @description
+   * This function will return all the reviews from restaurantReviewsOffline.
+   */
+  static getOfflineReviewsFromIDBCache() {
+	  const dbPromise = DBHelper.initIDB();
+    return dbPromise.then((db) => {
+      var tx = db.transaction(RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE);
+      var reviewsStore = tx.objectStore(RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE);
+      return reviewsStore.getAll();
+    });
+  }
+  /**
+   * @description
+   * This function will post review to the server, if data is posting from restaurantReviewsOffline.
+   * then that data needs to be deleted by passing "deleteFromOffline=true" flag.
+   * @param {object} reviewObject
+   * @param {boolean} deleteFromOffline
+   */
+	static submitReview(reviewObject,deleteFromOffline) {
      return fetch(DBHelper.REVIEWS_URL, {
+	  method: "POST",
       body: JSON.stringify(reviewObject),
       headers: {
         'Content-Type': 'application/json'
-      },
-      method: "POST"
+      }
      }).then(response => {
-      response.json().then(data => {
-        DBHelper.saveDataToIDB(data, RESTAURANT_REVIEWS_OBJ_STORE);
-        return data;
+      return response.json().then(data => {
+        var promise = DBHelper.saveDataToIDB(data, RESTAURANT_REVIEWS_OBJ_STORE);
+        if(deleteFromOffline){
+          promise.then( _ => {
+            DBHelper.deleteReviewFromIDBCache(data).then( _ => {
+              console.log(`Deleted review by ${data.name} from OfflineReviewsStore`);
+            }).catch(error =>{
+              console.log(`Error deleting review of ${data.name} from OfflineReviewsStore`, error);
+            });
+          });
+        }
+        return Promise.resolve(data);
       })
       // console.log('error');
-    }).catch(error => {
-		
-		 /**
+    }).catch(error =>console.log('error'));
+	}
+/**
+   * @description
+   * This function will delete review from Idb.
+   */
+  static deleteReviewFromIDBCache(dbPromise,data) {
+    return this.dbPromise.then((db) => {
+      let tx = db.transaction(RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE, 'readwrite');
+      let reviewsStore = tx.objectStore(RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE);
+      reviewsStore.delete(data.updatedAt);
+      return tx.complete;
+});
+  }
+   /**
        * User is offline, add an updatedAt and createdAt
        * property to the review object and store it in the IDB.
 			 */
+  static submitReviewOffline(reviewObject)
+	  {
 	  reviewObject.createdAt = new Date().getTime();
       reviewObject.updatedAt = new Date().getTime();	 
       DBHelper.saveDataToIDB(reviewObject, RESTAURANT_REVIEWS_OFFLINE_OBJ_STORE);
-	});
-  }
-
-  }
+	}
 
 
+
+
+ }
