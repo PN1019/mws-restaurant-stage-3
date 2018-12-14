@@ -30,6 +30,19 @@ class DBHelper {
   static get REVIEWS_BY_ID_URL() {
     return `${APP_URL}/reviews?restaurant_id=`;
   }
+  // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=true
+static markFavorite(id) {
+  fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=true`, {
+    method: 'PUT'
+  });
+}
+
+// http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=false
+static unMarkFavorite(id) {
+  fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=false`, {
+    method: 'PUT'
+  });
+}
 /**
    * @description
    * This function will create object store name 'restaurantList' inside

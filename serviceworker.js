@@ -9,7 +9,7 @@
 } */
 
  
-const staticCacheName = 'restaurant-reviews-v4';
+const staticCacheName = 'restaurant-statics-v4';
 var imgCache = 'restaurant-img';
 
 var filesToCache=[
@@ -44,7 +44,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cacheName) {
-          return cacheName.startsWith('restaurant-reviews-') &&
+          return cacheName.startsWith('restaurant-statics-') &&
                  cacheName != staticCacheName;
         }).map(function(cacheName) {
           return caches.delete(cacheName);
@@ -63,9 +63,7 @@ self.addEventListener('fetch', function(event) {
    return;
 }
 event.respondWith(
-  /*  fetch(returnUrl, {
-		     mode: 'no-cors'
-		   }) */
+ 
     caches.open(staticCacheName).then(function(cache) {
       return cache.match(event.request).then(function (response) {
         if (response) {
@@ -91,7 +89,7 @@ event.respondWith(
 });
 
 /**
-* @description Adds photos to the imgCache
+* @description Adds images to the imgCache
 * @param {string} request
 * @returns {Response}
 */
@@ -126,7 +124,8 @@ function cacheImages(request) {
 	        // Build the return URL
 	    	var returnUrl = req.url.substr(0, req.url.lastIndexOf(".")) + ".webp";
 	//console.log("Service Worker starting fetch"); */
-  self.addEventListener('sync', function(event) {
+ 
+ self.addEventListener('sync', function(event) {
   if (event.tag == 'restaurantReviewsOffline') {
     event.waitUntil(syncReviews());
   }

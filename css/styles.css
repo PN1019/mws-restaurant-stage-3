@@ -3,6 +3,7 @@
 
 body,td,th,p{
 	 font: 16px/1.6 Arial, Helvetica, sans-serif;
+	 line-height: 1.5;
 }
 body {
 	background-color: #fdfdfd;
@@ -39,7 +40,15 @@ h1:focus, h2:focus, h3:focus, p:focus,
 td:focus, input:focus, textarea:focus,label:focus {
   outline: 1px solid orangered;
 }
+select:focus, img:focus {
+  outline: 2px solid orangered;
+}
 
+#restaurants-list li a:focus,
+#restaurants-list li a:hover {
+  background-color: black;
+  outline: 2px solid orangered;
+}
 #maincontent {
   background-color: #f3f3f3;
   min-height: 100%;
@@ -209,7 +218,60 @@ nav h1 a {
 #restaurants-list li div p:first-child{
   padding-right: 5px;
 }
+/* ====================== Favorite Restaurant ====================== */
+#restaurants-list .fav-control {
+  background-color: white;
+  width: 44px;
+  height: 40px;
+  position: absolute;
+  align-self: flex-end;
+  margin-top: 6px;
+  margin-left: -6px;
+  padding: 5px;
+  border: 1px solid #999;
+  border: 4px double #999;
+  background-image: url('../img/favorite5.png');
+  background-repeat: no-repeat;
+  background-position: 6px -26px;
+  background-size: 24px;
+  cursor: pointer;
+  text-indent: -10000px;
+}
+#restaurants-list .fav-control.active  {
+  background-position: 6px 5px;
+}
+#restaurants-list .fav-control:hover {
+  background-position: 6px -59px;
+}
 
+#restaurant-img-container {
+  display: flex;
+  flex-direction: column;
+}
+#restaurant-fav {
+  background-color: white;
+  width: 44px;
+  height: 40px;
+  position: absolute;
+  align-self: flex-end;
+  margin-top: 6px;
+  margin-left: -6px;
+  padding: 5px;
+  border: 1px solid #999;
+  border: 4px double #999;
+  background-image: url('../img/favorite5.png');
+  background-repeat: no-repeat;
+  background-position: 6px -27px;
+  background-size: 24px;
+  cursor: pointer;
+  text-indent: -10000px;
+}
+#restaurant-fav.active {
+  background-position: 6px 5px;
+}
+#restaurant-fav:hover {
+  background-position: 6px -59px;
+}
 /* ====================== Restaurant Details ====================== */
 .inside header {
   position: fixed;

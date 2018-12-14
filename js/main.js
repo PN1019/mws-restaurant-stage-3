@@ -29,7 +29,7 @@ const fetchNeighborhoods = () => {
       fillNeighborhoodsHTML();
     }
   });
-}
+};
 
 /**
  * Set neighborhoods HTML.
@@ -42,7 +42,7 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
     option.value = neighborhood;
     select.append(option);
   });
-}
+};
 
 /**
  * Fetch all cuisines and set their HTML.
@@ -56,7 +56,7 @@ const fetchCuisines = () => {
       fillCuisinesHTML();
     }
   });
-}
+};
 
 /**
  * Set cuisines HTML.
@@ -70,7 +70,7 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
     option.value = cuisine;
     select.append(option);
   });
-}
+};
 
 /**
  * Initialize leaflet map, called from HTML.
@@ -154,25 +154,56 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
-
+const fav = document.createElement('button');
+  fav.className = 'fav-control';
+  fav.setAttribute('aria-label', 'favorite');
+  if (restaurant.is_favorite === 'true') {
+    fav.classList.add('active');
+    fav.setAttribute('aria-pressed', 'true');
+    fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
+    fav.title = `Remove ${restaurant.name} as a favorite`;
+  } else {
+    fav.setAttribute('aria-pressed', 'false');
+    fav.innerHTML = `Add ${restaurant.name} as a favorite`;
+    fav.title = `Add ${restaurant.name} as a favorite`;
+  }
+  fav.addEventListener('click', (evt) => {
+    evt.preventDefault();
+    if (fav.classList.contains('active')) {
+      fav.setAttribute('aria-pressed', 'false');
+      fav.innerHTML = `Add ${restaurant.name} as a favorite`;
+      fav.title = `Add ${restaurant.name} as a favorite`;
+      DBHelper.unMarkFavorite(restaurant.id);
+    } else {
+      fav.setAttribute('aria-pressed', 'true');
+      fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
+      fav.title = `Remove ${restaurant.name} as a favorite`;
+      DBHelper.markFavorite(restaurant.id);
+    }
+    fav.classList.toggle('active');
+  });
+  li.append(fav);
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.dataset.src = DBHelper.imageUrlForRestaurant(restaurant);
   // Add alt-text for restaurant images according to restaurant names.
   image.alt = restaurant.name + ' restaurant image';
-  li.append(image);
-   window.lazyImageObserver.observe(image);
-
+  image.tabIndex=0;
+  window.lazyImageObserver.observe(image);
+ li.append(image);
+ 
   const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
   li.append(name);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
+  neighborhood.tabIndex = 0;
   li.append(neighborhood);
 
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
+  address.tabIndex = 0;
   li.append(address);
 
   const more = document.createElement('a');
@@ -200,17 +231,8 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
     self.markers.push(marker);
   });
 
-} 
-/* addMarkersToMap = (restaurants = self.restaurants) => {
-  restaurants.forEach(restaurant => {
-    // Add marker to the map
-    const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
-    google.maps.event.addListener(marker, 'click', () => {
-      window.location.href = marker.url
-    });
-    self.markers.push(marker);
-  });
-} */
+} ;
+
 /**
 * @description
   This method will fetch images as user scrolls down.

@@ -21,12 +21,14 @@
     <!-- Beginning nav -->
     <nav aria-label="Breadcrumb">
       <h1><a href="/">Restaurant Reviews</a></h1>
-    </nav>
+   
     <!-- Beginning breadcrumb -->
     <ul id="breadcrumb" role="navigation" aria-label="Breadcrumb">
       <li><a href="/" aria-current="page">Home</a></li>
     </ul>
+	
     <!-- End breadcrumb -->
+	 </nav>
     <!-- End nav -->
   </header>
   <!-- End header -->
@@ -41,7 +43,10 @@
     <!-- Beginning restaurant -->
     <section id="restaurant-container" aria-labelledby="restaurantname">
       <h2 id="restaurant-name"></h2>
+	  <div id="restaurant-img-container">
+  <button id="restaurant-fav" aria-label="favorite"></button>
       <img id="restaurant-img">
+	  </div>
       <p id="restaurant-cuisine"></p>
       <p id="restaurant-address"></p>
       <table id="restaurant-hours"></table>
@@ -53,10 +58,10 @@
     </section>
 	<!-- Add review start -->
     <section id="add-review-container">
-      <h3>Add Review</h3>
+      <h3 tabindex="0">Add Review</h3>
       <form class="review-form">
         <div>
-          <label for="name">Name:</label>
+          <label for="name" tabindex="0">Name:</label>
           <input type="text" placeholder="Enter Name" id="name" required />
         </div>
            <div id="stars">
